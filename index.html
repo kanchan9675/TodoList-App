@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TaskFlow Pro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/feather-icons/4.29.1/feather.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- ═══ TOAST CONTAINER ═══ -->
+  <div id="toast-container" aria-live="polite"></div>
+
+  <!-- ═══ REMINDER POPUP ═══ -->
+  <div id="reminder-popup" class="reminder-popup hidden" role="alertdialog" aria-modal="true" aria-label="Task Reminder">
+    <div class="reminder-inner">
+      <div class="reminder-icon" id="reminder-popup-icon">⏰</div>
+      <div class="reminder-body">
+        <p class="reminder-label">Reminder</p>
+        <p class="reminder-title" id="reminder-popup-title">Task title here</p>
+        <p class="reminder-time" id="reminder-popup-time"></p>
+      </div>
+      <button class="reminder-close" id="reminder-close" aria-label="Dismiss reminder">
+        <i data-feather="x"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══ EMOJI PICKER MODAL ═══ -->
+  <div id="emoji-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-label="Pick an emoji or image">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3>Pick Emoji or Image</h3>
+        <button class="icon-btn" id="emoji-modal-close" aria-label="Close"><i data-feather="x"></i></button>
+      </div>
+      <!-- Emoji grid -->
+      <div class="emoji-section-label">Quick Emojis</div>
+      <div class="emoji-grid" id="emoji-grid"></div>
+      <!-- Upload image -->
+      <div class="emoji-section-label" style="margin-top:1rem">Upload Image</div>
+      <label class="upload-area" for="img-upload" id="upload-area">
+        <i data-feather="image"></i>
+        <span>Click to upload (PNG, JPG, GIF)</span>
+        <input type="file" id="img-upload" accept="image/*" style="display:none" />
+      </label>
+      <div id="img-preview-wrap" class="img-preview-wrap hidden">
+        <img id="img-preview" src="" alt="Preview" />
+        <button class="small-btn danger" id="img-clear">Remove</button>
+      </div>
+      <div class="modal-footer">
+        <button class="small-btn" id="emoji-cancel">Cancel</button>
+        <button class="small-btn accent" id="emoji-confirm">Use This</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ APP SHELL ═══ -->
+  <div class="app-shell">
+
+    <!-- ── SIDEBAR NAV ── -->
+    <nav class="sidebar" role="navigation" aria-label="Main navigation">
+      <div class="sidebar-brand">
+        <span class="brand-icon">✦</span>
+        <span class="brand-name">TaskFlow</span>
+      </div>
+
+      <ul class="nav-list">
+        <li>
+          <button class="nav-btn active" data-view="tasks" aria-label="All Tasks">
+            <i data-feather="check-square"></i>
+            <span>Tasks</span>
+          </button>
+        </li>
+        <li>
+          <button class="nav-btn" data-view="plan" aria-label="Plan My Day">
+            <i data-feather="sun"></i>
+            <span>Plan My Day</span>
+          </button>
+        </li>
+        <li>
+          <button class="nav-btn" data-view="manage" aria-label="Task Management">
+            <i data-feather="trello"></i>
+            <span>Manage</span>
+          </button>
+        </li>
+        <li>
+          <button class="nav-btn" data-view="reminders" aria-label="Reminders">
+            <i data-feather="bell"></i>
+            <span>Reminders</span>
+            <span class="badge" id="reminder-badge" style="display:none">0</span>
+          </button>
+        </li>
+      </ul>
+
+      <button id="theme-toggle" class="theme-toggle-btn" title="Toggle theme" aria-label="Toggle dark/light mode">
+        <i data-feather="moon"></i>
+        <span>Dark Mode</span>
+      </button>
+    </nav>
+
+    <!-- ── MAIN CONTENT ── -->
+    <main class="main-content">
+
+      <!-- ══════════════════════════════════════
+           VIEW 1 — TASKS
+      ══════════════════════════════════════ -->
+      <section id="view-tasks" class="view active">
+
+        <div class="view-header">
+          <h2 class="view-title">My Tasks</h2>
+          <!-- Stats row -->
+          <div class="stats" aria-label="Task summary">
+            <span class="stat"><span class="stat-num" id="total-count">0</span><span class="stat-label">Total</span></span>
+            <span class="stat-divider">|</span>
+            <span class="stat"><span class="stat-num" id="done-count">0</span><span class="stat-label">Done</span></span>
+            <span class="stat-divider">|</span>
+            <span class="stat"><span class="stat-num" id="pending-count">0</span><span class="stat-label">Pending</span></span>
+          </div>
+        </div>
+
+        <!-- Input card -->
+        <section class="input-section" aria-label="Add a new task">
+          <!-- Row 1: emoji trigger + title -->
+          <div class="input-row">
+            <button id="emoji-trigger" class="emoji-trigger" title="Add emoji or image" aria-label="Pick emoji or image">
+              <span id="emoji-display">＋</span>
+            </button>
+            <input type="text" id="task-input" class="task-input" placeholder="What needs to be done?" maxlength="120" autocomplete="off" aria-label="New task title" />
+          </div>
+          <!-- Row 2: date, time, color, priority, add -->
+          <div class="input-row meta-row">
+            <input type="date" id="due-date-input" class="date-input" aria-label="Due date" title="Due date" />
+            <input type="time" id="due-time-input" class="time-input" aria-label="Due time" title="Due time" />
+
+            <!-- Rainbow color picker -->
+            <div class="color-picker-wrap" title="Task color">
+              <span class="color-picker-label">Color</span>
+              <div class="color-swatches" id="color-swatches" role="radiogroup" aria-label="Task color"></div>
+            </div>
+
+            <!-- Priority -->
+            <select id="priority-select" class="priority-select" aria-label="Priority">
+              <option value="none">Priority</option>
+              <option value="low">🟢 Low</option>
+              <option value="medium">🟡 Medium</option>
+              <option value="high">🔴 High</option>
+            </select>
+
+            <!-- Reminder toggle -->
+            <label class="reminder-toggle-label" title="Set reminder for due time">
+              <input type="checkbox" id="reminder-check" /> ⏰ Remind
+            </label>
+
+            <button id="add-btn" class="add-btn" aria-label="Add task">
+              <i data-feather="plus"></i> Add
+            </button>
+          </div>
+          <p id="input-error" class="input-error" role="alert" aria-live="assertive"></p>
+        </section>
+
+        <!-- Search + filter bar -->
+        <div class="toolbar">
+          <div class="search-wrapper">
+            <i data-feather="search" class="search-icon"></i>
+            <input type="search" id="search-input" class="search-input" placeholder="Search tasks…" aria-label="Search tasks" />
+          </div>
+          <div class="filter-bar" role="group" aria-label="Filter tasks">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="pending">Pending</button>
+            <button class="filter-btn" data-filter="completed">Completed</button>
+            <button class="filter-btn" data-filter="high">🔴 High</button>
+            <span class="spacer"></span>
+            <button id="clear-all-btn" class="danger-btn"><i data-feather="trash-2"></i> Clear All</button>
+          </div>
+        </div>
+
+        <!-- Task list -->
+        <ul id="task-list" class="task-list" aria-label="Task list" role="list">
+          <li class="empty-state" id="empty-state">
+            <span class="empty-icon">📋</span>
+            <p>No tasks here. Add one above!</p>
+          </li>
+        </ul>
+      </section>
+
+      <!-- ══════════════════════════════════════
+           VIEW 2 — PLAN MY DAY
+      ══════════════════════════════════════ -->
+      <section id="view-plan" class="view">
+        <div class="view-header">
+          <h2 class="view-title">Plan My Day</h2>
+          <span class="view-subtitle" id="plan-date-label"></span>
+        </div>
+
+        <!-- Day planner: hour timeline -->
+        <div class="day-planner">
+          <div class="planner-legend">
+            <div class="planner-slots" id="planner-slots"></div>
+          </div>
+          <div class="planner-tasks" id="planner-tasks"></div>
+        </div>
+
+        <!-- Unscheduled tasks for today -->
+        <div class="plan-unscheduled">
+          <h3 class="plan-section-title">Unscheduled for Today</h3>
+          <ul id="unscheduled-list" class="unscheduled-list"></ul>
+        </div>
+      </section>
+
+      <!-- ══════════════════════════════════════
+           VIEW 3 — TASK MANAGEMENT (Kanban)
+      ══════════════════════════════════════ -->
+      <section id="view-manage" class="view">
+        <div class="view-header">
+          <h2 class="view-title">Task Management</h2>
+          <span class="view-subtitle">Drag cards between columns</span>
+        </div>
+        <div class="kanban-board" id="kanban-board">
+          <div class="kanban-col" data-status="todo">
+            <div class="kanban-col-header">
+              <span class="kanban-dot" style="background:#6C63FF"></span>
+              <h3>To Do</h3>
+              <span class="kanban-count" id="k-todo-count">0</span>
+            </div>
+            <ul class="kanban-list" id="k-todo" data-status="todo"></ul>
+          </div>
+          <div class="kanban-col" data-status="inprogress">
+            <div class="kanban-col-header">
+              <span class="kanban-dot" style="background:#F59E0B"></span>
+              <h3>In Progress</h3>
+              <span class="kanban-count" id="k-inprogress-count">0</span>
+            </div>
+            <ul class="kanban-list" id="k-inprogress" data-status="inprogress"></ul>
+          </div>
+          <div class="kanban-col" data-status="done">
+            <div class="kanban-col-header">
+              <span class="kanban-dot" style="background:#22C55E"></span>
+              <h3>Done</h3>
+              <span class="kanban-count" id="k-done-count">0</span>
+            </div>
+            <ul class="kanban-list" id="k-done" data-status="done"></ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════════════════════════════
+           VIEW 4 — REMINDERS
+      ══════════════════════════════════════ -->
+      <section id="view-reminders" class="view">
+        <div class="view-header">
+          <h2 class="view-title">Reminders</h2>
+          <span class="view-subtitle">Important tasks with scheduled alerts</span>
+        </div>
+        <ul id="reminder-list" class="reminder-list">
+          <li class="empty-state">
+            <span class="empty-icon">🔔</span>
+            <p>No reminders set. Mark a task as ⏰ Remind when adding.</p>
+          </li>
+        </ul>
+      </section>
+
+    </main>
+  </div><!-- /.app-shell -->
+
+  <script src="script.js"></script>
+</body>
+</html>

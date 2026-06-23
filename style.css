@@ -1,0 +1,1392 @@
+/* ============================================================
+   style.css — TaskFlow To-Do App
+   Design: Ink-on-paper light theme / slate dark theme
+   Signature element: animated left-border accent on tasks
+   ============================================================ */
+
+/* ── 1. CSS CUSTOM PROPERTIES (Design Tokens) ──────────────── */
+:root {
+  /* Light theme palette */
+  --bg:           #F7F6F3;        /* warm off-white */
+  --surface:      #FFFFFF;        /* card/panel background */
+  --surface-alt:  #F0EDE8;        /* subtle secondary surface */
+  --border:       #E0DBD3;        /* dividers */
+  --text-primary: #1A1814;        /* near-black headlines */
+  --text-secondary:#6B6560;       /* muted labels */
+  --accent:       #5B4FE8;        /* indigo — action color */
+  --accent-hover: #4840C7;
+  --accent-light: #EAE8FC;        /* tinted accent for badges */
+  --done-color:   #22A06B;        /* green for completed */
+  --done-light:   #E3F5ED;
+  --danger:       #D94040;
+  --danger-light: #FCEAEA;
+  --warn:         #C87800;        /* due-date overdue */
+  --warn-light:   #FFF4E0;
+  --shadow:       0 2px 12px rgba(26,24,20,.08);
+  --shadow-lg:    0 8px 32px rgba(26,24,20,.12);
+  --radius:       12px;
+  --radius-sm:    8px;
+  --transition:   .2s ease;
+}
+
+/* Dark theme overrides — applied when <html data-theme="dark"> */
+[data-theme="dark"] {
+  --bg:           #14131A;
+  --surface:      #1E1C28;
+  --surface-alt:  #27243A;
+  --border:       #332F4A;
+  --text-primary: #EDEAF8;
+  --text-secondary:#8C88A8;
+  --accent:       #7B70F0;
+  --accent-hover: #9890F5;
+  --accent-light: #2A2650;
+  --done-color:   #3DD68C;
+  --done-light:   #0E2E20;
+  --danger:       #F06060;
+  --danger-light: #31101A;
+  --warn:         #FFA940;
+  --warn-light:   #2E1E00;
+  --shadow:       0 2px 12px rgba(0,0,0,.35);
+  --shadow-lg:    0 8px 32px rgba(0,0,0,.50);
+}
+
+/* ── 2. RESET & BASE ────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  background-color: var(--bg);
+  color: var(--text-primary);
+  min-height: 100vh;
+  transition: background-color var(--transition), color var(--transition);
+}
+
+ul, ol { list-style: none; }
+
+button { cursor: pointer; font-family: inherit; }
+
+input, button { outline: none; }
+
+input:focus-visible,
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+/* ── 3. LAYOUT ──────────────────────────────────────────────── */
+.app-wrapper {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+}
+
+/* ── 4. HEADER ──────────────────────────────────────────────── */
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+
+/* Signature decorative mark */
+.brand-icon {
+  font-size: 1.4rem;
+  color: var(--accent);
+  animation: spin-slow 8s linear infinite;
+}
+
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+
+.brand-name {
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 1.75rem;
+  font-weight: 400;
+  letter-spacing: -.5px;
+  color: var(--text-primary);
+}
+
+/* ── 5. ICON BUTTON (theme toggle) ─────────────────────────── */
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 1.5px solid var(--border);
+  border-radius: 50%;
+  background: var(--surface);
+  color: var(--text-secondary);
+  transition: background var(--transition), color var(--transition),
+              border-color var(--transition), transform .1s;
+}
+
+.icon-btn:hover {
+  background: var(--accent-light);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.icon-btn:active { transform: scale(.92); }
+
+.icon-btn svg { width: 1.1rem; height: 1.1rem; }
+
+/* ── 6. INPUT SECTION ───────────────────────────────────────── */
+.input-section {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.25rem 1rem;
+  box-shadow: var(--shadow);
+  margin-bottom: 1.25rem;
+  transition: box-shadow var(--transition);
+}
+
+.input-section:focus-within {
+  box-shadow: var(--shadow-lg);
+  border-color: var(--accent);
+}
+
+.input-row {
+  display: flex;
+  gap: .75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* Main task title input */
+.task-input {
+  flex: 1 1 200px;
+  height: 2.75rem;
+  padding: 0 1rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text-primary);
+  font-size: .95rem;
+  transition: border-color var(--transition), background var(--transition);
+}
+
+.task-input::placeholder { color: var(--text-secondary); }
+
+.task-input:focus {
+  border-color: var(--accent);
+  background: var(--surface);
+}
+
+/* Due date picker */
+.date-input {
+  height: 2.75rem;
+  padding: 0 .75rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: .85rem;
+  cursor: pointer;
+  transition: border-color var(--transition);
+  min-width: 145px;
+}
+
+.date-input:focus { border-color: var(--accent); color: var(--text-primary); }
+
+/* Due time picker */
+.time-input {
+  height: 2.75rem;
+  padding: 0 .75rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: .85rem;
+  cursor: pointer;
+  transition: border-color var(--transition);
+  min-width: 112px;
+}
+
+.time-input:focus { border-color: var(--accent); color: var(--text-primary); }
+
+/* Add button */
+.add-btn {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  height: 2.75rem;
+  padding: 0 1.25rem;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: .92rem;
+  font-weight: 600;
+  letter-spacing: .02em;
+  transition: background var(--transition), transform .1s;
+  white-space: nowrap;
+}
+
+.add-btn:hover  { background: var(--accent-hover); }
+.add-btn:active { transform: scale(.96); }
+.add-btn svg    { width: 1rem; height: 1rem; }
+
+/* Validation error */
+.input-error {
+  margin-top: .5rem;
+  font-size: .82rem;
+  color: var(--danger);
+  min-height: 1rem;
+  transition: opacity var(--transition);
+}
+
+/* ── 7. TOOLBAR (search + stats) ────────────────────────────── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+/* Search wrapper with icon */
+.search-wrapper {
+  position: relative;
+  flex: 1 1 180px;
+}
+
+.search-icon {
+  position: absolute;
+  left: .75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: .9rem;
+  height: .9rem;
+  color: var(--text-secondary);
+  pointer-events: none;
+}
+
+.search-input {
+  width: 100%;
+  height: 2.4rem;
+  padding: 0 .75rem 0 2.3rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text-primary);
+  font-size: .88rem;
+  transition: border-color var(--transition);
+}
+
+.search-input:focus { border-color: var(--accent); }
+.search-input::placeholder { color: var(--text-secondary); }
+
+/* Stats pills */
+.stats {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  white-space: nowrap;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.2;
+}
+
+.stat-num {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--text-primary);
+}
+
+.stat-label {
+  font-size: .7rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.stat-divider {
+  color: var(--border);
+  font-size: .9rem;
+  padding: 0 .1rem;
+}/* ============================================================
+   style.css — TaskFlow Pro
+   Layout: Sidebar + Main content
+   New: Rainbow task colors, Kanban board, Day Planner,
+        Emoji/Image picker, Reminder popup
+   ============================================================ */
+
+/* ── 1. TOKENS ──────────────────────────────────────────────── */
+:root {
+  --bg:            #F4F2EF;
+  --surface:       #FFFFFF;
+  --surface-alt:   #EDEBE7;
+  --border:        #E0DBD3;
+  --text:          #1A1814;
+  --text-muted:    #6B6560;
+  --accent:        #5B4FE8;
+  --accent-h:      #4840C7;
+  --accent-light:  #EAE8FC;
+  --done:          #22A06B;
+  --done-light:    #E3F5ED;
+  --danger:        #D94040;
+  --danger-light:  #FCEAEA;
+  --warn:          #C87800;
+  --warn-light:    #FFF4E0;
+  --sidebar-w:     220px;
+  --shadow:        0 2px 12px rgba(26,24,20,.08);
+  --shadow-lg:     0 8px 32px rgba(26,24,20,.14);
+  --radius:        12px;
+  --radius-sm:     8px;
+  --t:             .2s ease;
+
+  /* Rainbow palette — 8 task colors */
+  --c0: #FF6B6B;  /* red     */
+  --c1: #FF9F43;  /* orange  */
+  --c2: #FECA57;  /* yellow  */
+  --c3: #48C774;  /* green   */
+  --c4: #00CECE;  /* teal    */
+  --c5: #5B4FE8;  /* indigo  */
+  --c6: #B44FE8;  /* violet  */
+  --c7: #FF6BB5;  /* pink    */
+}
+
+[data-theme="dark"] {
+  --bg:           #0F0E18;
+  --surface:      #1A1827;
+  --surface-alt:  #231F35;
+  --border:       #302B48;
+  --text:         #EDEAF8;
+  --text-muted:   #8C88A8;
+  --accent:       #7B70F0;
+  --accent-h:     #9890F5;
+  --accent-light: #2A2650;
+  --done:         #3DD68C;
+  --done-light:   #0E2E20;
+  --danger:       #F06060;
+  --danger-light: #31101A;
+  --warn:         #FFA940;
+  --warn-light:   #2E1E00;
+  --shadow:       0 2px 12px rgba(0,0,0,.4);
+  --shadow-lg:    0 8px 32px rgba(0,0,0,.6);
+}
+
+/* ── 2. RESET ───────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Inter', system-ui, sans-serif; font-size: 15px; line-height: 1.6; background: var(--bg); color: var(--text); min-height: 100vh; transition: background var(--t), color var(--t); }
+ul { list-style: none; }
+button { cursor: pointer; font-family: inherit; }
+input, button, select { outline: none; }
+input:focus-visible, button:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ── 3. APP SHELL ───────────────────────────────────────────── */
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ── 4. SIDEBAR ─────────────────────────────────────────────── */
+.sidebar {
+  width: var(--sidebar-w);
+  background: var(--surface);
+  border-right: 1.5px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 1rem;
+  gap: 1.5rem;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 100;
+  transition: background var(--t), border-color var(--t);
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  padding-left: .25rem;
+}
+
+.brand-icon { font-size: 1.3rem; color: var(--accent); animation: spin-slow 8s linear infinite; }
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+.brand-name { font-family: 'DM Serif Display', Georgia, serif; font-size: 1.3rem; color: var(--text); }
+
+.nav-list { display: flex; flex-direction: column; gap: .3rem; flex: 1; }
+
+.nav-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: .65rem;
+  padding: .6rem .85rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: .88rem;
+  font-weight: 500;
+  transition: background var(--t), color var(--t);
+  position: relative;
+}
+.nav-btn svg { width: 1rem; height: 1rem; flex-shrink: 0; }
+.nav-btn:hover { background: var(--surface-alt); color: var(--text); }
+.nav-btn.active { background: var(--accent-light); color: var(--accent); font-weight: 600; }
+
+.badge {
+  position: absolute;
+  right: .6rem;
+  top: 50%; transform: translateY(-50%);
+  background: var(--danger);
+  color: #fff;
+  font-size: .68rem;
+  font-weight: 700;
+  padding: .1rem .4rem;
+  border-radius: 99px;
+  min-width: 1.2rem;
+  text-align: center;
+}
+
+.theme-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .55rem .85rem;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-muted);
+  font-size: .82rem;
+  transition: background var(--t), color var(--t);
+}
+.theme-toggle-btn:hover { background: var(--surface-alt); color: var(--text); }
+.theme-toggle-btn svg { width: .95rem; height: .95rem; }
+
+/* ── 5. MAIN CONTENT ────────────────────────────────────────── */
+.main-content {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  padding: 2rem 2rem 4rem;
+  max-width: calc(100vw - var(--sidebar-w));
+  overflow-x: hidden;
+}
+
+/* ── 6. VIEWS ───────────────────────────────────────────────── */
+.view { display: none; animation: fade-in .2s ease; }
+.view.active { display: block; }
+@keyframes fade-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+.view-header {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+.view-title { font-family: 'DM Serif Display', serif; font-size: 1.7rem; font-weight: 400; }
+.view-subtitle { color: var(--text-muted); font-size: .88rem; }
+
+/* ── 7. INPUT SECTION ───────────────────────────────────────── */
+.input-section {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.25rem 1rem;
+  box-shadow: var(--shadow);
+  margin-bottom: 1.25rem;
+  transition: box-shadow var(--t), border-color var(--t);
+}
+.input-section:focus-within { box-shadow: var(--shadow-lg); border-color: var(--accent); }
+
+.input-row { display: flex; gap: .65rem; align-items: center; flex-wrap: wrap; }
+.meta-row { margin-top: .65rem; }
+
+/* Emoji trigger button */
+.emoji-trigger {
+  flex-shrink: 0;
+  width: 2.75rem; height: 2.75rem;
+  border: 1.5px dashed var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-alt);
+  font-size: 1.35rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: border-color var(--t), background var(--t);
+  line-height: 1;
+}
+.emoji-trigger:hover { border-color: var(--accent); background: var(--accent-light); }
+
+#emoji-display { pointer-events: none; }
+#emoji-display.has-img { font-size: .7rem; }
+#emoji-display img { width: 2rem; height: 2rem; object-fit: cover; border-radius: 4px; }
+
+.task-input {
+  flex: 1 1 200px; height: 2.75rem;
+  padding: 0 1rem;
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--bg); color: var(--text); font-size: .95rem;
+  transition: border-color var(--t), background var(--t);
+}
+.task-input::placeholder { color: var(--text-muted); }
+.task-input:focus { border-color: var(--accent); background: var(--surface); }
+
+.date-input, .time-input, .priority-select {
+  height: 2.4rem; padding: 0 .75rem;
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--bg); color: var(--text-muted);
+  font-family: inherit; font-size: .82rem; cursor: pointer;
+  transition: border-color var(--t);
+}
+.date-input { min-width: 140px; }
+.time-input { min-width: 110px; }
+.priority-select { min-width: 120px; }
+.date-input:focus, .time-input:focus, .priority-select:focus { border-color: var(--accent); color: var(--text); }
+
+/* ── 8. COLOR SWATCHES ──────────────────────────────────────── */
+.color-picker-wrap {
+  display: flex; align-items: center; gap: .4rem;
+}
+.color-picker-label { font-size: .75rem; color: var(--text-muted); white-space: nowrap; }
+.color-swatches { display: flex; gap: .3rem; flex-wrap: wrap; }
+
+.color-swatch {
+  width: 1.15rem; height: 1.15rem;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform .15s, border-color .15s;
+}
+.color-swatch:hover { transform: scale(1.25); }
+.color-swatch.selected {
+  border-color: var(--text);
+  transform: scale(1.2);
+  box-shadow: 0 0 0 2px var(--surface), 0 0 0 4px currentColor;
+}
+
+/* ── 9. REMINDER TOGGLE ─────────────────────────────────────── */
+.reminder-toggle-label {
+  display: flex; align-items: center; gap: .3rem;
+  font-size: .82rem; color: var(--text-muted);
+  cursor: pointer; white-space: nowrap;
+}
+.reminder-toggle-label input { cursor: pointer; accent-color: var(--accent); }
+
+/* ── 10. ADD BUTTON ─────────────────────────────────────────── */
+.add-btn {
+  display: flex; align-items: center; gap: .4rem;
+  height: 2.4rem; padding: 0 1.2rem;
+  background: var(--accent); color: #fff;
+  border: none; border-radius: var(--radius-sm);
+  font-size: .9rem; font-weight: 600;
+  transition: background var(--t), transform .1s;
+  white-space: nowrap;
+}
+.add-btn:hover { background: var(--accent-h); }
+.add-btn:active { transform: scale(.96); }
+.add-btn svg { width: 1rem; height: 1rem; }
+
+.input-error { margin-top: .4rem; font-size: .8rem; color: var(--danger); min-height: 1rem; }
+
+/* ── 11. TOOLBAR + FILTER ───────────────────────────────────── */
+.toolbar { display: flex; align-items: center; gap: .75rem; margin-bottom: .85rem; flex-wrap: wrap; }
+
+.search-wrapper { position: relative; flex: 1 1 180px; }
+.search-icon { position: absolute; left: .7rem; top: 50%; transform: translateY(-50%); width: .85rem; height: .85rem; color: var(--text-muted); pointer-events: none; }
+.search-input {
+  width: 100%; height: 2.3rem; padding: 0 .75rem 0 2.2rem;
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--surface); color: var(--text); font-size: .86rem;
+  transition: border-color var(--t);
+}
+.search-input:focus { border-color: var(--accent); }
+.search-input::placeholder { color: var(--text-muted); }
+
+.filter-bar { display: flex; align-items: center; gap: .4rem; flex-wrap: wrap; }
+.filter-btn {
+  height: 1.9rem; padding: 0 .9rem;
+  border: 1.5px solid var(--border); border-radius: 99px;
+  background: transparent; color: var(--text-muted);
+  font-size: .78rem; font-weight: 500;
+  transition: background var(--t), color var(--t), border-color var(--t);
+}
+.filter-btn:hover { background: var(--accent-light); color: var(--accent); border-color: var(--accent); }
+.filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.spacer { flex: 1; }
+.danger-btn {
+  display: flex; align-items: center; gap: .3rem;
+  height: 1.9rem; padding: 0 .85rem;
+  border: 1.5px solid var(--danger); border-radius: var(--radius-sm);
+  background: transparent; color: var(--danger); font-size: .78rem; font-weight: 500;
+  transition: background var(--t);
+}
+.danger-btn:hover { background: var(--danger-light); }
+.danger-btn svg { width: .8rem; height: .8rem; }
+
+/* ── 12. STATS ──────────────────────────────────────────────── */
+.stats { display: flex; align-items: center; gap: .5rem; }
+.stat { display: flex; flex-direction: column; align-items: center; line-height: 1.2; }
+.stat-num { font-weight: 700; font-size: 1rem; color: var(--text); }
+.stat-label { font-size: .68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; }
+.stat-divider { color: var(--border); font-size: .9rem; }
+
+/* ── 13. TASK LIST ──────────────────────────────────────────── */
+.task-list { display: flex; flex-direction: column; gap: .55rem; }
+
+.empty-state {
+  display: flex; flex-direction: column; align-items: center;
+  gap: .5rem; padding: 3rem 1rem; text-align: center; color: var(--text-muted);
+}
+.empty-icon { font-size: 2.5rem; }
+
+/* ── 14. TASK CARD ──────────────────────────────────────────── */
+.task-item {
+  display: flex; align-items: flex-start; gap: .75rem;
+  padding: .85rem 1rem;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border-left: 5px solid var(--task-color, var(--accent));
+  position: relative;
+  transition: box-shadow var(--t), opacity var(--t);
+  animation: slide-in .22s ease;
+  cursor: grab;
+}
+@keyframes slide-in { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:none; } }
+
+.task-item:hover { box-shadow: var(--shadow-lg); }
+.task-item.completed { opacity: .65; }
+.task-item.completed .task-title { text-decoration: line-through; color: var(--text-muted); }
+.task-item.dragging { opacity: .35; cursor: grabbing; }
+.task-item.drag-over { border-top: 2px dashed var(--accent); }
+
+/* Priority badge */
+.priority-badge {
+  position: absolute; top: .5rem; right: .5rem;
+  font-size: .65rem; font-weight: 700;
+  padding: .1rem .4rem; border-radius: 99px;
+  text-transform: uppercase; letter-spacing: .05em;
+}
+.priority-badge.high   { background: #FCEAEA; color: var(--danger); }
+.priority-badge.medium { background: var(--warn-light); color: var(--warn); }
+.priority-badge.low    { background: var(--done-light); color: var(--done); }
+
+/* Reminder indicator dot */
+.reminder-dot {
+  position: absolute; top: .5rem; right: 3.5rem;
+  font-size: .75rem;
+  animation: pulse 1.5s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:.4;} }
+
+/* Task emoji/image thumbnail */
+.task-thumb {
+  flex-shrink: 0; width: 2rem; height: 2rem;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem; border-radius: var(--radius-sm);
+  background: var(--surface-alt);
+  overflow: hidden;
+}
+.task-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Checkbox */
+.task-checkbox { display: none; }
+.checkbox-label {
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; width: 1.3rem; height: 1.3rem;
+  border: 2px solid var(--border); border-radius: 50%;
+  margin-top: .15rem; cursor: pointer;
+  transition: border-color var(--t), background var(--t);
+}
+.checkbox-label svg { width: .72rem; height: .72rem; stroke: #fff; opacity: 0; transition: opacity var(--t); }
+.task-checkbox:checked + .checkbox-label { border-color: var(--done); background: var(--done); }
+.task-checkbox:checked + .checkbox-label svg { opacity: 1; }
+
+/* Task body */
+.task-body { flex: 1; min-width: 0; }
+.task-title { font-size: .93rem; font-weight: 500; word-break: break-word; }
+
+/* Due badge */
+.task-due {
+  display: inline-flex; align-items: center; gap: .25rem;
+  margin-top: .25rem; font-size: .73rem; font-weight: 500;
+  padding: .12rem .45rem; border-radius: 4px;
+  background: var(--accent-light); color: var(--accent);
+}
+.task-due.overdue { background: var(--warn-light); color: var(--warn); }
+.task-due svg { width: .65rem; height: .65rem; }
+.due-time { display: inline-flex; align-items: center; gap: .2rem; margin-left: .3rem; padding-left: .3rem; border-left: 1px solid currentColor; opacity: .85; }
+
+/* Inline edit */
+.task-edit-input {
+  width: 100%; padding: .25rem .5rem;
+  border: 1.5px solid var(--accent); border-radius: var(--radius-sm);
+  background: var(--bg); color: var(--text); font-family: inherit; font-size: .93rem;
+}
+
+/* Action buttons */
+.task-actions { display: flex; align-items: center; gap: .3rem; flex-shrink: 0; padding-top: .05rem; }
+.task-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 1.9rem; height: 1.9rem;
+  border: none; border-radius: var(--radius-sm);
+  background: transparent; color: var(--text-muted);
+  transition: background var(--t), color var(--t);
+}
+.task-btn:hover { background: var(--surface-alt); }
+.task-btn.edit-btn:hover   { color: var(--accent); }
+.task-btn.save-btn:hover   { color: var(--done); }
+.task-btn.delete-btn:hover { color: var(--danger); }
+.task-btn svg { width: .85rem; height: .85rem; }
+
+.drag-handle { cursor: grab; color: var(--border); flex-shrink: 0; display: flex; align-items: center; }
+.drag-handle svg { width: .85rem; height: .85rem; }
+
+/* ── 15. ICON BUTTON ────────────────────────────────────────── */
+.icon-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 2.2rem; height: 2.2rem;
+  border: 1.5px solid var(--border); border-radius: 50%;
+  background: var(--surface); color: var(--text-muted);
+  transition: background var(--t), color var(--t), border-color var(--t);
+}
+.icon-btn:hover { background: var(--accent-light); color: var(--accent); border-color: var(--accent); }
+.icon-btn svg { width: 1rem; height: 1rem; }
+
+/* ── 16. KANBAN BOARD ───────────────────────────────────────── */
+.kanban-board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.kanban-col {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  min-height: 300px;
+}
+
+.kanban-col-header {
+  display: flex; align-items: center; gap: .5rem;
+  margin-bottom: .85rem;
+}
+.kanban-col-header h3 { font-size: .9rem; font-weight: 600; flex: 1; }
+.kanban-dot { width: .6rem; height: .6rem; border-radius: 50%; flex-shrink: 0; }
+.kanban-count {
+  background: var(--surface-alt); color: var(--text-muted);
+  font-size: .72rem; font-weight: 700;
+  padding: .1rem .45rem; border-radius: 99px;
+}
+
+.kanban-list { display: flex; flex-direction: column; gap: .5rem; min-height: 80px; }
+
+.kanban-card {
+  background: var(--surface-alt);
+  border: 1.5px solid var(--border);
+  border-left: 4px solid var(--task-color, var(--accent));
+  border-radius: var(--radius-sm);
+  padding: .6rem .75rem;
+  cursor: grab;
+  transition: box-shadow var(--t), opacity var(--t);
+  animation: slide-in .18s ease;
+  font-size: .85rem;
+}
+.kanban-card:hover { box-shadow: var(--shadow); }
+.kanban-card.dragging { opacity: .3; cursor: grabbing; }
+.kanban-card.drag-over-card { border-top: 2px dashed var(--accent); }
+.kanban-card.drag-over-col  { background: var(--accent-light); }
+
+.kanban-card-thumb { font-size: 1.1rem; margin-right: .3rem; }
+.kanban-card-title { font-weight: 500; word-break: break-word; }
+.kanban-card-meta  { font-size: .72rem; color: var(--text-muted); margin-top: .2rem; display: flex; gap: .5rem; }
+
+.kanban-col.drag-target-col { background: var(--accent-light); border-color: var(--accent); }
+
+/* ── 17. DAY PLANNER ────────────────────────────────────────── */
+.day-planner {
+  display: flex;
+  gap: 0;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.planner-legend {
+  width: 56px;
+  flex-shrink: 0;
+  border-right: 1.5px solid var(--border);
+  background: var(--surface-alt);
+}
+
+.planner-slots {
+  display: flex;
+  flex-direction: column;
+}
+
+.planner-slot-label {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: .5rem;
+  font-size: .7rem;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border);
+}
+
+.planner-tasks {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.planner-row {
+  height: 48px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0 .5rem;
+  gap: .4rem;
+  flex-wrap: wrap;
+}
+
+.planner-row.now-row {
+  background: var(--accent-light);
+}
+
+.planner-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: .3rem;
+  padding: .15rem .5rem;
+  border-radius: 99px;
+  font-size: .72rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--task-color, var(--accent));
+  white-space: nowrap;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.planner-chip-thumb { font-size: .85rem; }
+
+.plan-unscheduled { }
+.plan-section-title { font-size: .9rem; font-weight: 600; color: var(--text-muted); margin-bottom: .6rem; text-transform: uppercase; letter-spacing: .06em; }
+.unscheduled-list { display: flex; flex-wrap: wrap; gap: .5rem; }
+.unscheduled-chip {
+  display: inline-flex; align-items: center; gap: .35rem;
+  padding: .3rem .75rem;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-left: 4px solid var(--task-color, var(--accent));
+  border-radius: var(--radius-sm);
+  font-size: .82rem; font-weight: 500;
+}
+.unscheduled-chip span { font-size: 1rem; }
+
+/* ── 18. REMINDER LIST VIEW ─────────────────────────────────── */
+.reminder-list { display: flex; flex-direction: column; gap: .65rem; }
+
+.reminder-item {
+  display: flex; align-items: center; gap: .85rem;
+  padding: .9rem 1rem;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-left: 5px solid var(--task-color, var(--accent));
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+.reminder-item-icon { font-size: 1.5rem; flex-shrink: 0; }
+.reminder-item-body { flex: 1; }
+.reminder-item-title { font-weight: 600; font-size: .93rem; }
+.reminder-item-time  { font-size: .78rem; color: var(--text-muted); margin-top: .1rem; }
+.reminder-item-priority { font-size: .7rem; font-weight: 700; padding: .1rem .4rem; border-radius: 99px; }
+
+/* ── 19. REMINDER POPUP ─────────────────────────────────────── */
+.reminder-popup {
+  position: fixed;
+  top: 1.5rem; right: 1.5rem;
+  z-index: 9000;
+  max-width: 340px;
+  width: calc(100vw - 3rem);
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  animation: reminder-in .3s ease;
+}
+@keyframes reminder-in { from { opacity:0; transform:translateX(40px); } to { opacity:1; transform:none; } }
+.reminder-popup.hidden { display: none; }
+
+.reminder-inner { display: flex; align-items: center; gap: .85rem; padding: 1rem 1.1rem; }
+.reminder-icon { font-size: 2rem; flex-shrink: 0; animation: wiggle .6s ease infinite alternate; }
+@keyframes wiggle { from { transform: rotate(-10deg); } to { transform: rotate(10deg); } }
+.reminder-body { flex: 1; }
+.reminder-label { font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; color: var(--accent); font-weight: 700; }
+.reminder-title { font-size: .95rem; font-weight: 600; margin-top: .1rem; }
+.reminder-time  { font-size: .78rem; color: var(--text-muted); }
+.reminder-close { border: none; background: transparent; color: var(--text-muted); display: flex; }
+.reminder-close svg { width: 1rem; height: 1rem; }
+
+/* ── 20. EMOJI MODAL ────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 8000;
+  background: rgba(0,0,0,.45);
+  display: flex; align-items: center; justify-content: center;
+  animation: fade-in .15s ease;
+}
+.modal-overlay.hidden { display: none; }
+
+.modal-box {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  width: 360px; max-width: calc(100vw - 2rem);
+  max-height: 90vh; overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+}
+
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: .85rem;
+}
+.modal-header h3 { font-size: 1rem; font-weight: 600; }
+
+.emoji-section-label { font-size: .75rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: .06em; margin-bottom: .4rem; }
+
+.emoji-grid { display: flex; flex-wrap: wrap; gap: .35rem; }
+.emoji-btn {
+  width: 2.4rem; height: 2.4rem; font-size: 1.3rem;
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--surface-alt); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: transform .12s, border-color .12s;
+}
+.emoji-btn:hover { transform: scale(1.2); border-color: var(--accent); }
+.emoji-btn.selected { border-color: var(--accent); background: var(--accent-light); box-shadow: 0 0 0 2px var(--accent); }
+
+.upload-area {
+  display: flex; flex-direction: column; align-items: center; gap: .4rem;
+  padding: 1rem; border: 2px dashed var(--border); border-radius: var(--radius-sm);
+  color: var(--text-muted); font-size: .83rem; cursor: pointer;
+  transition: border-color var(--t), background var(--t);
+}
+.upload-area:hover { border-color: var(--accent); background: var(--accent-light); }
+.upload-area svg { width: 1.5rem; height: 1.5rem; }
+
+.img-preview-wrap { display: flex; align-items: center; gap: .75rem; margin-top: .6rem; }
+.img-preview-wrap.hidden { display: none; }
+#img-preview { width: 3rem; height: 3rem; object-fit: cover; border-radius: var(--radius-sm); border: 1.5px solid var(--border); }
+
+.modal-footer { display: flex; justify-content: flex-end; gap: .5rem; margin-top: 1rem; }
+
+.small-btn {
+  height: 2rem; padding: 0 1rem;
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  background: transparent; color: var(--text-muted);
+  font-size: .82rem; font-weight: 500; cursor: pointer;
+  transition: background var(--t), color var(--t);
+}
+.small-btn:hover  { background: var(--surface-alt); color: var(--text); }
+.small-btn.accent { background: var(--accent); color: #fff; border-color: var(--accent); }
+.small-btn.accent:hover { background: var(--accent-h); }
+.small-btn.danger { background: transparent; color: var(--danger); border-color: var(--danger); }
+.small-btn.danger:hover { background: var(--danger-light); }
+
+/* ── 21. TOAST ──────────────────────────────────────────────── */
+#toast-container { position: fixed; bottom: 1.5rem; right: 1.5rem; display: flex; flex-direction: column; gap: .4rem; z-index: 9999; pointer-events: none; }
+.toast {
+  display: flex; align-items: center; gap: .5rem;
+  padding: .6rem 1rem; border-radius: var(--radius-sm);
+  background: var(--text); color: var(--bg);
+  font-size: .83rem; font-weight: 500;
+  box-shadow: var(--shadow-lg); pointer-events: auto;
+  animation: toast-in .22s ease, toast-out .3s ease 2.7s forwards;
+  max-width: 280px;
+}
+.toast svg { width: .85rem; height: .85rem; flex-shrink: 0; }
+.toast.success { background: var(--done); color: #fff; }
+.toast.error   { background: var(--danger); color: #fff; }
+.toast.info    { background: var(--accent); color: #fff; }
+@keyframes toast-in  { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+@keyframes toast-out { to   { opacity:0; transform:translateY(10px); } }
+
+/* ── 22. RESPONSIVE ─────────────────────────────────────────── */
+@media (max-width: 768px) {
+  :root { --sidebar-w: 0px; }
+  .sidebar {
+    width: 100%; height: auto; position: relative;
+    flex-direction: row; flex-wrap: wrap;
+    padding: .75rem 1rem; gap: .5rem;
+    border-right: none; border-bottom: 1.5px solid var(--border);
+  }
+  .sidebar-brand { margin-right: auto; }
+  .nav-list { flex-direction: row; flex: none; }
+  .nav-btn span:not(.badge) { display: none; }
+  .nav-btn { width: auto; padding: .5rem; }
+  .theme-toggle-btn span { display: none; }
+  .theme-toggle-btn { padding: .5rem; }
+  .main-content { margin-left: 0; padding: 1.25rem 1rem 3rem; max-width: 100vw; }
+  .kanban-board { grid-template-columns: 1fr; }
+  .meta-row { flex-direction: column; align-items: stretch; }
+  .add-btn { width: 100%; justify-content: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+/* ── 8. FILTER BAR ──────────────────────────────────────────── */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  height: 2rem;
+  padding: 0 1rem;
+  border: 1.5px solid var(--border);
+  border-radius: 2rem;       /* pill shape */
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: .82rem;
+  font-weight: 500;
+  transition: background var(--transition), color var(--transition),
+              border-color var(--transition);
+}
+
+.filter-btn:hover {
+  background: var(--accent-light);
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.filter-btn.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* Spacer between filters and danger button */
+.spacer { flex: 1; }
+
+/* Clear All button */
+.danger-btn {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  height: 2rem;
+  padding: 0 .9rem;
+  border: 1.5px solid var(--danger);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--danger);
+  font-size: .82rem;
+  font-weight: 500;
+  transition: background var(--transition), color var(--transition);
+}
+
+.danger-btn:hover {
+  background: var(--danger-light);
+}
+
+.danger-btn svg { width: .85rem; height: .85rem; }
+
+/* ── 9. TASK LIST ───────────────────────────────────────────── */
+.task-list {
+  display: flex;
+  flex-direction: column;
+  gap: .6rem;
+}
+
+/* Empty state card */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .5rem;
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.empty-icon { font-size: 2.5rem; }
+
+/* ── 10. INDIVIDUAL TASK CARD ───────────────────────────────── */
+.task-item {
+  display: flex;
+  align-items: flex-start;
+  gap: .85rem;
+  padding: .9rem 1rem;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  transition: box-shadow var(--transition), border-color var(--transition),
+              opacity var(--transition), transform var(--transition);
+  position: relative;
+  /* Signature: left-border accent that animates in */
+  border-left: 4px solid var(--accent);
+  animation: slide-in .22s ease;
+  cursor: grab;
+}
+
+@keyframes slide-in {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.task-item:hover { box-shadow: var(--shadow-lg); }
+
+/* Completed state */
+.task-item.completed {
+  opacity: .7;
+  border-left-color: var(--done-color);
+}
+
+.task-item.completed .task-title {
+  text-decoration: line-through;
+  color: var(--text-secondary);
+}
+
+/* Drag-and-drop visual feedback */
+.task-item.dragging {
+  opacity: .4;
+  cursor: grabbing;
+  box-shadow: var(--shadow-lg);
+}
+
+.task-item.drag-over {
+  border-top: 2px dashed var(--accent);
+}
+
+/* ── 11. CUSTOM CHECKBOX ────────────────────────────────────── */
+/* Hidden native checkbox */
+.task-checkbox { display: none; }
+
+/* Visible label acting as checkbox */
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.35rem;
+  height: 1.35rem;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  margin-top: .15rem;
+  cursor: pointer;
+  transition: border-color var(--transition), background var(--transition);
+}
+
+.checkbox-label svg {
+  width: .75rem;
+  height: .75rem;
+  stroke: #fff;
+  opacity: 0;
+  transition: opacity var(--transition);
+}
+
+/* When checked */
+.task-checkbox:checked + .checkbox-label {
+  border-color: var(--done-color);
+  background: var(--done-color);
+}
+
+.task-checkbox:checked + .checkbox-label svg { opacity: 1; }
+
+/* ── 12. TASK BODY ──────────────────────────────────────────── */
+.task-body {
+  flex: 1;
+  min-width: 0;   /* allows text to wrap inside flex */
+}
+
+.task-title {
+  font-size: .95rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  word-break: break-word;
+  transition: color var(--transition);
+}
+
+/* Due date+time badge under the title */
+.task-due {
+  display: inline-flex;
+  align-items: center;
+  gap: .25rem;
+  margin-top: .3rem;
+  font-size: .75rem;
+  font-weight: 500;
+  padding: .15rem .5rem;
+  border-radius: 4px;
+  background: var(--accent-light);
+  color: var(--accent);
+}
+
+.task-due svg { width: .7rem; height: .7rem; }
+
+/* Time segment inside the badge */
+.task-due .due-time {
+  display: inline-flex;
+  align-items: center;
+  gap: .2rem;
+  margin-left: .35rem;
+  padding-left: .35rem;
+  border-left: 1px solid currentColor;
+  opacity: .85;
+}
+
+/* Overdue styling */
+.task-due.overdue {
+  background: var(--warn-light);
+  color: var(--warn);
+}
+
+/* Edit input shown when editing a task inline */
+.task-edit-input {
+  width: 100%;
+  padding: .3rem .5rem;
+  border: 1.5px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: .95rem;
+}
+
+/* ── 13. TASK ACTION BUTTONS ────────────────────────────────── */
+.task-actions {
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  flex-shrink: 0;
+}
+
+/* Edit / Delete icon buttons on each task */
+.task-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  transition: background var(--transition), color var(--transition);
+}
+
+.task-btn:hover { background: var(--surface-alt); }
+
+.task-btn.edit-btn:hover  { color: var(--accent); }
+.task-btn.save-btn:hover  { color: var(--done-color); }
+.task-btn.delete-btn:hover { color: var(--danger); }
+
+.task-btn svg { width: .9rem; height: .9rem; }
+
+/* Drag handle */
+.drag-handle {
+  cursor: grab;
+  color: var(--border);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.drag-handle:active { cursor: grabbing; }
+.drag-handle svg { width: .9rem; height: .9rem; }
+
+/* ── 14. TOAST NOTIFICATIONS ────────────────────────────────── */
+#toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: .5rem;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  padding: .7rem 1.1rem;
+  border-radius: var(--radius-sm);
+  background: var(--text-primary);
+  color: var(--bg);
+  font-size: .85rem;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  pointer-events: auto;
+  animation: toast-in .25s ease, toast-out .3s ease 2.7s forwards;
+  max-width: 300px;
+}
+
+.toast svg { width: .9rem; height: .9rem; flex-shrink: 0; }
+
+.toast.success { background: var(--done-color); }
+.toast.error   { background: var(--danger); color: #fff; }
+.toast.info    { background: var(--accent); color: #fff; }
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes toast-out {
+  to   { opacity: 0; transform: translateY(10px); }
+}
+
+/* ── 15. RESPONSIVE ─────────────────────────────────────────── */
+@media (max-width: 540px) {
+  .app-wrapper { padding: 1.25rem 1rem 3rem; }
+
+  .brand-name  { font-size: 1.4rem; }
+
+  .input-row   { flex-direction: column; align-items: stretch; }
+
+  .date-input  { width: 100%; }
+
+  .add-btn     { justify-content: center; width: 100%; }
+
+  .toolbar     { flex-direction: column; align-items: stretch; }
+
+  .stats       { justify-content: center; }
+
+  .filter-bar  { gap: .4rem; }
+
+  .filter-btn  { font-size: .78rem; padding: 0 .75rem; }
+
+  #toast-container {
+    bottom: 1rem;
+    right: 1rem;
+    left: 1rem;
+  }
+}
+
+/* ── 16. REDUCED MOTION PREFERENCE ─────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
